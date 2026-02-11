@@ -1,0 +1,42 @@
+name: Build libav.js h264-aac-mp3
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.71
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config
+
+      - uses: actions/cache@v4
+        with:
+          path: build
+          key: build-${{ hashFiles('patches/**', 'scripts/build.sh') }}
+
+      - name: Build
+        run: chmod +x scripts/build.sh && ./scripts/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libav-6.5.7.1-h264-aac-mp3
+          path: |
+            dist/libav-6.5.7.1-h264-aac-mp3.wasm.mjs
+            dist/libav-6.5.7.1-h264-aac-mp3.wasm.wasm
