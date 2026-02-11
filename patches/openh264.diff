@@ -1,0 +1,28 @@
+diff --git a/codec/api/wels/codec_api.h b/codec/api/wels/codec_api.h
+index a1326c8..7d57e0f 100644
+--- a/codec/api/wels/codec_api.h
++++ b/codec/api/wels/codec_api.h
+@@ -486,7 +486,7 @@ int (*Uninitialize) (ISVCEncoder*);
+ int (*EncodeFrame) (ISVCEncoder*, const SSourcePicture* kpSrcPic, SFrameBSInfo* pBsInfo);
+ int (*EncodeParameterSets) (ISVCEncoder*, SFrameBSInfo* pBsInfo);
+ 
+-int (*ForceIntraFrame) (ISVCEncoder*, bool bIDR);
++int (*ForceIntraFrame) (ISVCEncoder*, bool bIDR, int iLayerId);
+ 
+ int (*SetOption) (ISVCEncoder*, ENCODER_OPTION eOptionId, void* pOption);
+ int (*GetOption) (ISVCEncoder*, ENCODER_OPTION eOptionId, void* pOption);
+diff --git a/codec/decoder/core/src/wels_decoder_thread.cpp b/codec/decoder/core/src/wels_decoder_thread.cpp
+index fdf4b4d..37a4c1a 100644
+--- a/codec/decoder/core/src/wels_decoder_thread.cpp
++++ b/codec/decoder/core/src/wels_decoder_thread.cpp
+@@ -230,8 +230,10 @@ int SemWait (SWelsDecSemphore* s, int32_t timeout) {
+ #if defined(__APPLE__)
+         rc = pthread_cond_timedwait (& (s->e), & (s->m), &ts);
+ #else
++#if !defined(__EMSCRIPTEN__) || defined(__EMSCRIPTEN_PTHREADS__)
+         rc = sem_timedwait (s->e, &ts);
+         if (rc != 0) rc = errno;
++#endif
+ #endif
+         if (rc != EINTR) {
+           // if timed out we return to the caller
