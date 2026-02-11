@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+node_modules/
+
+# Output (keep dist/ tracked for CI artifacts reference, but ignore binaries)
+dist/*.wasm
+dist/*.wasm.mjs
+dist/*.wasm.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Emscripten cache
+.emscripten_cache/
