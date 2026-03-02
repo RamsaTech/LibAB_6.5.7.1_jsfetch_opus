@@ -41,7 +41,6 @@
         ["avfilter_link", "number", ["number", "number", "number", "number"]],
 
         ["avcodec_alloc_context3", "number", ["number"]],
-        ["avcodec_close", "number", ["number"]],
         ["avcodec_descriptor_get", "number", ["number"]],
         ["avcodec_descriptor_get_by_name", "number", ["string"]],
         ["avcodec_descriptor_next", "number", ["number"]],
