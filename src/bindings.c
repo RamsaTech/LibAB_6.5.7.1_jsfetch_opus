@@ -78,9 +78,9 @@ B(size_t, crop_left)
 B(size_t, crop_right)
 B(size_t, crop_top)
 BA(uint8_t *, data)
+B(int, flags)
 B(int, format)
 B(int, height)
-B(int, key_frame)
 BA(int, linesize)
 B(int, nb_samples)
 B(int, pict_type)
@@ -90,6 +90,12 @@ B(int, width)
 #undef B
 #undef BL
 #undef BA
+
+/* key_frame was removed from AVFrame in FFmpeg 8.0, use flags instead */
+int AVFrame_key_frame(AVFrame *a) { return !!(a->flags & AV_FRAME_FLAG_KEY); }
+void AVFrame_key_frame_s(AVFrame *a, int b) {
+    a->flags = (a->flags & ~AV_FRAME_FLAG_KEY) | (b ? AV_FRAME_FLAG_KEY : 0);
+}
 
 RAT(AVFrame, sample_aspect_ratio)
 
