@@ -288,6 +288,8 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
         -I"$FFBUILD" \
         "$ROOT/src/bindings.c" \
         "$FFBUILD/fftools/"*.o \
+        "$FFBUILD/fftools/textformat/"*.o \
+        "$FFBUILD/fftools/graph/"*.o \
         -L"$FFBUILD/libavdevice" -lavdevice \
         -L"$FFBUILD/libavformat" -lavformat \
         -L"$FFBUILD/libavcodec" -lavcodec \
