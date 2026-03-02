@@ -272,7 +272,7 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
         --extern-post-js "$ROOT/src/extern-post.js" \
         -s "EXPORT_NAME='LibAVFactory'" \
         -s "EXPORTED_FUNCTIONS=@$BUILD/exports.json" \
-        -s "EXPORTED_RUNTIME_METHODS=['ccall','cwrap','PThread']" \
+        -s "EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
         -s MODULARIZE=1 \
         -s STACK_SIZE=1048576 \
         -s ASYNCIFY \
@@ -290,6 +290,7 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
         "$FFBUILD/fftools/"*.o \
         "$FFBUILD/fftools/textformat/"*.o \
         "$FFBUILD/fftools/graph/"*.o \
+        "$FFBUILD/fftools/resources/"*.o \
         -L"$FFBUILD/libavdevice" -lavdevice \
         -L"$FFBUILD/libavformat" -lavformat \
         -L"$FFBUILD/libavcodec" -lavcodec \
