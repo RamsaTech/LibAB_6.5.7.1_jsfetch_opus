@@ -1,4 +1,4 @@
-# LibAB 6.5.7.1 — h264-aac-mp3 WASM Build
+# LibAB 6.8.8.0 — h264-aac-mp3 WASM Build
 
 Custom [libav.js](https://github.com/nicholasnooney/libav.js) WASM build for the EYTD web extension. Produces a single `.wasm.mjs` + `.wasm` pair with jsfetch protocol support for HLS streaming.
 
@@ -6,11 +6,11 @@ Custom [libav.js](https://github.com/nicholasnooney/libav.js) WASM build for the
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| FFmpeg | 7.1 | Core multimedia framework |
-| emfiberthreads | 1.1 | Async fiber support for Emscripten |
+| FFmpeg | 8.0 | Core multimedia framework |
+| emfiberthreads | 1.3 | Async fiber support for Emscripten |
 | lame | 3.100 | MP3 encoding (libmp3lame) |
-| libvpx | 1.15.0 | VP9 decoding |
-| openh264 | 2.5.0 | H.264 support |
+| libvpx | 1.16.0 | VP9 decoding |
+| openh264 | 2.6.0 | H.264 support |
 
 ### Enabled Capabilities
 
@@ -27,7 +27,7 @@ Custom [libav.js](https://github.com/nicholasnooney/libav.js) WASM build for the
 
 ### Prerequisites
 
-- [Emscripten SDK](https://emscripten.org/) 3.1.71
+- [Emscripten SDK](https://emscripten.org/) 5.0.2
 - Node.js 20+
 - pkg-config
 
@@ -42,8 +42,8 @@ source /path/to/emsdk/emsdk_env.sh
 ```
 
 Output appears in `dist/`:
-- `libav-6.5.7.1-h264-aac-mp3.wasm.mjs` — ES6 module (JS glue + WASM loader)
-- `libav-6.5.7.1-h264-aac-mp3.wasm.wasm` — WebAssembly binary
+- `libav-6.8.8.0-h264-aac-mp3.wasm.mjs` — ES6 module (JS glue + WASM loader)
+- `libav-6.8.8.0-h264-aac-mp3.wasm.wasm` — WebAssembly binary
 
 ### CI Build
 
@@ -52,7 +52,7 @@ Push to `main` or open a PR to trigger the GitHub Actions workflow. Build artifa
 ## Project Structure
 
 ```
-patches/ffmpeg/     10 FFmpeg patches (series7) including jsfetch protocol
+patches/ffmpeg/     11 FFmpeg patches (series8) including jsfetch protocol
 patches/            openh264 compatibility patch
 src/                C bindings, JS glue, function definitions
 scripts/build.sh    Main build orchestrator (downloads, builds, links)
@@ -62,7 +62,7 @@ dist/               Build output (gitignored)
 
 ## Patches
 
-The `patches/ffmpeg/series7` file defines the patch order for FFmpeg 7.x:
+The `patches/ffmpeg/series8` file defines the patch order for FFmpeg 8.x:
 
 1. `01-blocking-reader.diff` — Blocking reader for async I/O
 2. `02-openh264-api.diff` — OpenH264 API compatibility
@@ -74,3 +74,4 @@ The `patches/ffmpeg/series7` file defines the patch order for FFmpeg 7.x:
 8. `08-fftools.diff` — FFmpeg CLI tools for Emscripten
 9. `09-no-file.diff` — Disable file-based features
 10. `10-write-malloc-crash.diff` — Fix write/malloc crash
+11. `11-h2645-sei-aom-fix.diff` — Guard HEVC SEI film grain params

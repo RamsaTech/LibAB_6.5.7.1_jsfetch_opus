@@ -1,17 +1,17 @@
 #!/bin/bash
 # =============================================================================
-# LibAB 6.5.7.1 — jsfetch opus build
+# LibAB 6.8.8.0 — jsfetch opus build
 # Builds libav.js WASM with h264 + aac + mp3 + vp9 + HLS/jsfetch support
-# Requires: Emscripten 3.1.71, Node.js, pkg-config
+# Requires: Emscripten 5.0.2, Node.js, pkg-config
 # =============================================================================
 set -euo pipefail
 
-FFMPEG_VERSION=7.1
-LIBAVJS_VERSION=6.5.7.1
-EMFT_VERSION=1.1
+FFMPEG_VERSION=8.0
+LIBAVJS_VERSION=6.8.8.0
+EMFT_VERSION=1.3
 LAME_VERSION=3.100
-LIBVPX_VERSION=1.15.0
-OPENH264_VERSION=2.5.0
+LIBVPX_VERSION=1.16.0
+OPENH264_VERSION=2.6.0
 OPTFLAGS="-Oz"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -165,8 +165,8 @@ if [ ! -f "$BUILD/ffmpeg-$FFMPEG_VERSION/PATCHED" ]; then
         cd "$BUILD" && tar Jxf "ffmpeg-$FFMPEG_VERSION.tar.xz"
     fi
 
-    echo "    Applying patches from series7..."
-    (cd "$ROOT/patches/ffmpeg" && cat $(cat series7)) | \
+    echo "    Applying patches from series8..."
+    (cd "$ROOT/patches/ffmpeg" && cat $(cat series8)) | \
         (cd "$BUILD/ffmpeg-$FFMPEG_VERSION" && patch -p1)
     touch "$BUILD/ffmpeg-$FFMPEG_VERSION/PATCHED"
 else
@@ -276,7 +276,7 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
         -s MODULARIZE=1 \
         -s STACK_SIZE=1048576 \
         -s ASYNCIFY \
-        -s "ASYNCIFY_IMPORTS=['libavjs_wait_reader']" \
+        -s "ASYNCIFY_IMPORTS=['libavjs_wait_reader','jsfetch_open_js','jsfetch_read_js','jsfetch_seek_js']" \
         -s INITIAL_MEMORY=25165824 \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s EXPORT_ES6=1 \
