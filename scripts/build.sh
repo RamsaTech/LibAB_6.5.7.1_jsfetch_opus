@@ -272,7 +272,8 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
         --extern-post-js "$ROOT/src/extern-post.js" \
         -s "EXPORT_NAME='LibAVFactory'" \
         -s "EXPORTED_FUNCTIONS=@$BUILD/exports.json" \
-        -s "EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
+        -s "EXPORTED_RUNTIME_METHODS=['ccall','cwrap','HEAP8','HEAPU8','HEAP16','HEAPU16','HEAP32','HEAPU32','HEAPF32','HEAPF64','HEAP64','HEAPU64']" \
+        -s WASM_BIGINT=0 \
         -s MODULARIZE=1 \
         -s STACK_SIZE=1048576 \
         -s ASYNCIFY \
