@@ -198,6 +198,7 @@ if [ ! -f "$FFBUILD/ffbuild/config.mak" ]; then
         --extra-ldflags="-L$INST/lib -lemfiberthreads -s INITIAL_MEMORY=25165824" \
         --enable-protocol=data --enable-protocol=file \
         --enable-protocol=jsfetch --enable-protocol=crypto \
+        --enable-protocol=pipe \
         --enable-filter=aresample --enable-filter=asetnsamples \
         --enable-muxer=mp4 --enable-muxer=matroska --enable-muxer=hls --enable-muxer=mp3 \
         --enable-demuxer=matroska --enable-demuxer=aac --enable-demuxer=hls --enable-demuxer=flv \
