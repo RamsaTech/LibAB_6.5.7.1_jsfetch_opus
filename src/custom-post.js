@@ -64,8 +64,15 @@ var abortSignalAny = function (signals) {
 /**
  * Override the jsfetch_open_js function to add retry logic and abort control.
  * This replaces the EM_JS generated version with our enhanced implementation.
+ *
+ * Must honour the `start_offset` parameter and populate `jsfo.filesize` from
+ * the response's Content-Length / Content-Range headers — the C side reads
+ * filesize via jsfetch_get_filesize_js and uses it to decide whether the URL
+ * is seekable (h->is_streamed = 0 when filesize > 0). Dropping either the
+ * parameter or the size parse breaks the mp4 demuxer on anything larger than
+ * one sequential read.
  */
-jsfetch_open_js = function (url) {
+jsfetch_open_js = function (url, start_offset) {
     return Asyncify.handleAsync(async function () {
         try {
             url = UTF8ToString(url);
@@ -80,7 +87,12 @@ jsfetch_open_js = function (url) {
                 signal = abortSignalAny([signal, Module.abortController.signal]);
             }
 
-            var response = await FetchWithRetry(fetchUrl, { signal: signal });
+            var fetchOptions = { signal: signal };
+            if (start_offset > 0) {
+                fetchOptions.headers = { 'Range': 'bytes=' + start_offset + '-' };
+            }
+
+            var response = await FetchWithRetry(fetchUrl, fetchOptions);
 
             if (!Module.libavjsJSFetch)
                 Module.libavjsJSFetch = { ctr: 1, fetches: {} };
@@ -98,8 +110,23 @@ jsfetch_open_js = function (url) {
                     jsfo.rej = rej;
                 }),
                 buf: null,
-                rej: null
+                rej: null,
+                filesize: 0
             };
+
+            // Populate filesize so jsfetch_get_filesize_js can return the
+            // authoritative total to the C side. Content-Range wins when a
+            // ranged request was issued (it carries total file size); fall
+            // back to Content-Length on fresh opens at offset 0.
+            var contentLength = response.headers.get('Content-Length');
+            var contentRange = response.headers.get('Content-Range');
+            if (contentRange) {
+                var m = contentRange.match(/bytes \d+-\d+\/(\d+)/);
+                if (m) jsfo.filesize = parseInt(m[1], 10);
+            } else if (contentLength && start_offset === 0) {
+                jsfo.filesize = parseInt(contentLength, 10);
+            }
+
             return idx;
         } catch (ex) {
             Module.fsThrownError = ex;
