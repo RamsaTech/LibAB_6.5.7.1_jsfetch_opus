@@ -70,29 +70,37 @@ var abortSignalAny = function (signals) {
 };
 
 /**
- * Internal helper: issue a bounded `Range: bytes=start-end` fetch and return
- * the response. Used by open/seek/read auto-chunking to keep each request
- * within YouTube's ~10 MiB "native-player" window so googlevideo doesn't
- * throttle the connection.
+ * Internal helper: issue a bounded range fetch via the `&range=X-Y` URL
+ * query param (NOT the HTTP `Range:` header). googlevideo.com throttles
+ * the HTTP Range path to ~40 KB/s regardless of chunk size, but serves
+ * `&range=` URL-param requests at full speed — that's the code path
+ * dash.js, yt-dlp, and VDH use. Same url can already carry other query
+ * params (expire, ei, clen, …), so we append with & vs ?.
  */
 async function _jsfetchRangedFetch(url, start, end, abortController) {
     var signal = abortController.signal;
     if (Module.abortController && Module.abortController.signal) {
         signal = abortSignalAny([signal, Module.abortController.signal]);
     }
-    var headers = { 'Range': 'bytes=' + start + '-' + end };
-    return await FetchWithRetry(url, { signal: signal, headers: headers });
+    var sep = url.indexOf('?') >= 0 ? '&' : '?';
+    var rangedUrl = url + sep + 'range=' + start + '-' + end;
+    return await FetchWithRetry(rangedUrl, { signal: signal });
 }
 
 /**
- * Internal helper: parse a "bytes START-END/TOTAL" Content-Range into the
- * TOTAL component. Returns 0 when absent or malformed.
+ * Internal helper: resolve the total file size. googlevideo embeds the
+ * authoritative total as a `&clen=N` query param on every adaptive URL.
+ * When using `&range=` the server returns 200 with Content-Length = chunk
+ * size (no Content-Range), so we look at the URL first, then fall back to
+ * Content-Range on the rare case the server sends a 206 anyway.
  */
-function _jsfetchParseTotal(resp) {
+function _jsfetchParseTotal(url, resp) {
+    var m = /[?&]clen=(\d+)/.exec(url);
+    if (m) return parseInt(m[1], 10);
     var cr = resp.headers.get('Content-Range');
     if (cr) {
-        var m = cr.match(/bytes \d+-\d+\/(\d+)/);
-        if (m) return parseInt(m[1], 10);
+        var cm = cr.match(/bytes \d+-\d+\/(\d+)/);
+        if (cm) return parseInt(cm[1], 10);
     }
     return 0;
 }
@@ -128,7 +136,7 @@ jsfetch_open_js = function (url, start_offset) {
                 controller: controller,
                 buf: null,
                 rej: null,
-                filesize: _jsfetchParseTotal(response),
+                filesize: _jsfetchParseTotal(fetchUrl, response),
                 offset: startOff,   // absolute byte offset of the next unread byte
                 chunkEnd: chunkEnd  // end offset of the currently-open range (inclusive)
             };
@@ -242,7 +250,7 @@ jsfetch_seek_js = function (old_idx, url, start_offset) {
                 controller: controller,
                 buf: null,
                 rej: null,
-                filesize: _jsfetchParseTotal(response) || carriedFilesize,
+                filesize: _jsfetchParseTotal(fetchUrl, response) || carriedFilesize,
                 offset: startOff,
                 chunkEnd: chunkEnd
             };
