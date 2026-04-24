@@ -30,7 +30,7 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 ===================================================================
 --- /dev/null
 +++ ffmpeg-6.0.1/libavformat/jsfetch.c
-@@ -0,0 +1,335 @@
+@@ -0,0 +1,348 @@
 +/*
 + * JavaScript fetch metaprotocol for ffmpeg client
 + * Copyright (c) 2023 Yahweasel and contributors
