@@ -30,7 +30,7 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 ===================================================================
 --- /dev/null
 +++ ffmpeg-6.0.1/libavformat/jsfetch.c
-@@ -0,0 +1,335 @@
+@@ -0,0 +1,347 @@
 +/*
 + * JavaScript fetch metaprotocol for ffmpeg client
 + * Copyright (c) 2023 Yahweasel and contributors
@@ -145,10 +145,20 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 +
 +/**
 + * Get file size from JavaScript side.
++ *
++ * Returns via two i32 out-pointers instead of a uint64_t return value
++ * because the build uses WASM_BIGINT=0 (required for Asyncify in Firefox),
++ * which makes EM_JS bodies returning 64-bit C types unsafe: the low 32 bits
++ * come back via the normal return path but the high 32 bits must be stashed
++ * with setTempRet0() from JS. Split stores through wasm memory avoid that
++ * dance and work regardless of WASM_BIGINT setting. Without this fix any
++ * jsfetch input larger than 2^32 bytes has its size truncated modulo 2^32.
 + */
-+EM_JS(uint64_t, jsfetch_get_filesize_js, (int idx), {
++EM_JS(void, jsfetch_get_filesize_js, (int idx, uint32_t *lo_out, uint32_t *hi_out), {
 +    var jsfo = Module.libavjsJSFetch.fetches[idx];
-+    return jsfo ? jsfo.filesize : 0;
++    var sz = jsfo ? (jsfo.filesize || 0) : 0;
++    HEAPU32[lo_out >> 2] = sz >>> 0;
++    HEAPU32[hi_out >> 2] = Math.floor(sz / 0x100000000) >>> 0;
 +});
 +
 +/**
@@ -160,9 +170,11 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 +    ctx->off = 0;
 +    ctx->seekable = -1; // probe seekability
 +    ctx->idx = jsfetch_open_js(url, 0);
-+    
++
 +    if (ctx->idx > 0) {
-+        ctx->filesize = jsfetch_get_filesize_js(ctx->idx);
++        uint32_t fs_lo = 0, fs_hi = 0;
++        jsfetch_get_filesize_js(ctx->idx, &fs_lo, &fs_hi);
++        ctx->filesize = ((uint64_t)fs_hi << 32) | (uint64_t)fs_lo;
 +        // If we got a filesize, assume seekable. Otherwise keep as streaming.
 +        if (ctx->filesize > 0) {
 +            h->is_streamed = 0;
