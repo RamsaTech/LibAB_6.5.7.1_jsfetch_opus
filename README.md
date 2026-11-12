@@ -6,7 +6,7 @@ Custom [libav.js](https://github.com/nicholasnooney/libav.js) WASM build for the
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| FFmpeg | 8.0 | Core multimedia framework |
+| FFmpeg | 8.0.3 | Core multimedia framework |
 | emfiberthreads | 1.3 | Async fiber support for Emscripten |
 | lame | 3.100 | MP3 encoding (libmp3lame) |
 | libvpx | 1.16.0 | VP9 decoding |

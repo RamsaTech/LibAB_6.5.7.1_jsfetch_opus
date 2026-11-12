@@ -2734,9 +2734,12 @@ function runMain(main, name, args) {
     args = convertArgs(name, args);
     var argv = ff_malloc_string_array(args);
     Module.fsThrownError = null;
+    EXITSTATUS = void 0;
     var ret = null;
     try {
         ret = main(args.length, argv);
+        if (typeof ret === "undefined")
+            ret = EXITSTATUS;
     } catch (ex) {
         if (ex && ex.name === "ExitStatus")
             ret = ex.status;
@@ -2752,6 +2755,10 @@ function runMain(main, name, args) {
 
     if (ret && ret.then) {
         return ret.then(function(ret) {
+            // An Asyncify/fiber-resumed main() resolves to undefined or the
+            // unwind placeholder 0; the exit() at its end set the real code.
+            if (typeof EXITSTATUS !== "undefined")
+                ret = EXITSTATUS;
             cleanup();
             return ret;
         }).catch(function(ex) {

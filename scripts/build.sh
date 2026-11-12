@@ -6,7 +6,7 @@
 # =============================================================================
 set -euo pipefail
 
-FFMPEG_VERSION=8.0
+FFMPEG_VERSION=8.0.3
 LIBAVJS_VERSION=6.8.8.0
 EMFT_VERSION=1.3
 LAME_VERSION=3.100
@@ -269,7 +269,6 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
     emcc $OPTFLAGS \
         --pre-js "$ROOT/src/pre.js" \
         --post-js "$BUILD/post.js" \
-        --post-js "$ROOT/src/custom-post.js" \
         --extern-post-js "$ROOT/src/extern-post.js" \
         -s "EXPORT_NAME='LibAVFactory'" \
         -s "EXPORTED_FUNCTIONS=@$BUILD/exports.json" \
