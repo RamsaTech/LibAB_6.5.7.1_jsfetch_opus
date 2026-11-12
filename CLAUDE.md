@@ -48,13 +48,12 @@ Steps are cached: each step checks for its output before running. Remove a `buil
 | `funcs.json` | Function definitions (name, return type, params, options like `async`/`returnsErrno`) — drives code generation |
 | `post.in.js` | Asyncify serialization layer — `serially()` chains async ops to prevent FFmpeg race conditions |
 | `libav.in.js` | Main namespace: WASM detection, target selection (asm/wasm/thr), module loading |
-| `custom-post.js` | **EYTD-specific**: jsfetch overrides with FetchWithRetry (exponential backoff), AbortSignal.any() polyfill |
 | `extern-post.js` | Worker/thread message protocol (`libavjs_run`/`libavjs_ret`) |
 | `pre.js` | Module initialization and WASM path resolution |
 
 ### Key Custom Patch: jsfetch Protocol
 
-`patches/ffmpeg/07-jsfetch-protocol.diff` adds a custom FFmpeg protocol (`jsfetch:`) that bridges FFmpeg's I/O to browser `fetch()`. The HLS demuxer rewrites http/https URLs to `jsfetch:` so all network I/O flows through JavaScript. `src/custom-post.js` overrides the default jsfetch handlers with retry logic and abort controller management.
+`patches/ffmpeg/07-jsfetch-protocol.diff` adds a custom FFmpeg protocol (`jsfetch:`) that bridges FFmpeg's I/O to browser `fetch()`. The HLS demuxer rewrites http/https URLs to `jsfetch:` so all network I/O flows through JavaScript. The JS side is the `EM_JS` bodies inside that patch; change behaviour there. Reassigning `jsfetch_*_js` from a `--post-js` file does nothing: the wasm import table captures the originals and the module is instantiated before post-js code runs.
 
 ### Asyncify Pattern
 

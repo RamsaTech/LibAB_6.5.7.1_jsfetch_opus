@@ -269,7 +269,6 @@ if [ ! -f "$ROOT/dist/$OUTNAME.wasm.mjs" ]; then
     emcc $OPTFLAGS \
         --pre-js "$ROOT/src/pre.js" \
         --post-js "$BUILD/post.js" \
-        --post-js "$ROOT/src/custom-post.js" \
         --extern-post-js "$ROOT/src/extern-post.js" \
         -s "EXPORT_NAME='LibAVFactory'" \
         -s "EXPORTED_FUNCTIONS=@$BUILD/exports.json" \
