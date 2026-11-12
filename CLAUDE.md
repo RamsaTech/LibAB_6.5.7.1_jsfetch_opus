@@ -69,7 +69,7 @@ FFmpeg's synchronous C API is bridged to async JavaScript via Emscripten's Async
 
 ## Enabled Codecs & Protocols
 
-- **Protocols:** data, file, jsfetch (custom), crypto
+- **Protocols:** data, file, pipe, jsfetch (custom), crypto
 - **Demuxers:** matroska, aac, hls, flv, dash, mpegts, mp3, mov, webvtt, srt, ass, ogg
 - **Muxers:** mp4, matroska, hls, mp3
 - **Decoders:** aac, h264 (openh264), mp3, libvpx_vp9

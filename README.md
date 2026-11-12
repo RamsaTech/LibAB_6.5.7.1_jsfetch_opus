@@ -14,7 +14,7 @@ Custom [libav.js](https://github.com/nicholasnooney/libav.js) WASM build for the
 
 ### Enabled Capabilities
 
-- **Protocols:** data, file, jsfetch, crypto
+- **Protocols:** data, file, pipe, jsfetch, crypto
 - **Demuxers:** matroska, aac, hls, flv, dash, mpegts, mp3, mov, webvtt, srt, ass, ogg
 - **Muxers:** mp4, matroska, hls, mp3
 - **Decoders:** aac, h264, mp3, libvpx_vp9
