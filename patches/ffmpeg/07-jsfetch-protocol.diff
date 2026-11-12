@@ -30,7 +30,7 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 ===================================================================
 --- /dev/null
 +++ ffmpeg-6.0.1/libavformat/jsfetch.c
-@@ -0,0 +1,347 @@
+@@ -0,0 +1,351 @@
 +/*
 + * JavaScript fetch metaprotocol for ffmpeg client
 + * Copyright (c) 2023 Yahweasel and contributors
@@ -83,8 +83,12 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 +
 +/**
 + * Open a fetch connection (JavaScript side).
++ *
++ * start_offset is a double, not uint64_t: with WASM_BIGINT=0 a 64-bit EM_JS
++ * argument arrives as two i32 halves and the JS body only sees the signed low
++ * half, so offsets >= 2 GiB broke the Range header. A double is exact to 2^53.
 + */
-+EM_JS(int, jsfetch_open_js, (const char *url, uint64_t start_offset), {
++EM_JS(int, jsfetch_open_js, (const char *url, double start_offset), {
 +    return Asyncify.handleAsync(function() {
 +            url = UTF8ToString(url);
 +            var fetchUrl = url.slice(0, 8) === "jsfetch:" ? url.slice(8) : url;
@@ -240,7 +244,7 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 +    return jsfetch_read_js(ctx->idx, buf, size);
 +}
 +
-+EM_JS(int, jsfetch_seek_js, (int old_idx, const char *url, uint64_t start_offset), {
++EM_JS(int, jsfetch_seek_js, (int old_idx, const char *url, double start_offset), {
 +    return Asyncify.handleAsync(function () {
 +        url = UTF8ToString(url);
 +        var fetchUrl = url.slice(0, 8) === "jsfetch:" ? url.slice(8) : url;
@@ -345,10 +349,10 @@ Index: ffmpeg-6.0.1/libavformat/jsfetch.c
 +    if (ctx->off && h->is_streamed)
 +        return AVERROR(ENOSYS);
 +
-+    int new_idx = jsfetch_seek_js(ctx->idx, h->filename, off);
++    int new_idx = jsfetch_seek_js(ctx->idx, h->filename, (double)off);
 +    if (new_idx < 0) {
 +       ctx->off = old_off;
-+       return old_off;
++       return new_idx;
 +    }
 +    
 +    ctx->idx = new_idx;
