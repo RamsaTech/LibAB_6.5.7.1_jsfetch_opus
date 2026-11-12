@@ -6,7 +6,7 @@
 # =============================================================================
 set -euo pipefail
 
-FFMPEG_VERSION=8.0
+FFMPEG_VERSION=8.0.3
 LIBAVJS_VERSION=6.8.8.0
 EMFT_VERSION=1.3
 LAME_VERSION=3.100
